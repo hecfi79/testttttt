@@ -1,0 +1,362 @@
+ЕЩЕ ЧЕТО
+
+print(data.iloc[0]) -- вывод всех первых элементов вместе с колумнами
+
+data = pd.read_csv('smoking_data.csv', sep=';') -- загрузка с сепаратором ";"
+
+http://datalytics.ru/all/kak-v-pandas-razbit-kolonku-na-neskolko-kolonok/ -- интересное разбиение
+одной колонки на несколько, тут все прозрачно понятно, как у Нарутки из фит примерно +-
+
+https://gitlab.com/ruslangulyanov02/machine-learning -- мой гитлаб
+
+https://gitlab.com/gunenkov/gunenkov.myu_fit-181_ml
+
+https://gitlab.com/NRLe184/kaus-machine-learning-fit-201 - гитлаб Нарутки, будем надеяться, что
+он его откроет...
+
+https://pastebin.com/ -- для чсв файлов
+
+https://www.youtube.com/watch?v=sO4IKex53JY&t=5s
+
+https://www.youtube.com/watch?v=kXvmqg8hc70 -- видео, если вдруг забудешь че делать ваще
+
+https://share.streamlit.io/ -- верный друг для запуска сервера, ИБО ДРУГИЕ ОТКАЗАЛИСЬ ОТ НАШЕЙ ВЕЛИКОЙ СТРАНЫ
+
+https://www.notion.so/a53e9e35dc4f482f889e2a3f516be9fd -- нотион Шаруна, стоит глянуть тоже
+
+
+МОДУЛЬ А
+
+Надеюсь, все мы умные и сможем убрать от мусора датасет. Но приложу важные методы для разделения столба
+на несколько:
+new_df_eyes = smoking_dataframe['eyesight(left, right)'].str.split(',',expand=True)
+new_df_eyes.columns = ['eyesight_left', 'eyesight_right']
+
+new_df_hear = smoking_dataframe['hearing(left, right)'].str.split(',',expand=True)
+new_df_hear.columns = ['hear_left', 'hear_right']
+
+smoking_dataframe = smoking_dataframe.join(new_df_eyes)
+smoking_dataframe = smoking_dataframe.join(new_df_hear)
+
+smoking_dataframe = smoking_dataframe.drop(columns = ['eyesight(left, right)', 'hearing(left, right)']) -- выбрасываем из датафрейма старые объединённые признаки
+
+# обработаем категориальные признаки (бинарные в данном случае, кхм кхм)
+print(set(data_proc['gender']))
+print(set(data_proc['dental caries']))
+print(set(data_proc['tartar']))
+print(set(data_proc['smoking']))
+
+mapping1 = {'M': 1, 'F': 0} 
+
+data_proc['gender'] = data_proc['gender'].map(mapping1)
+print(set(data_proc['gender']))
+
+mapping2 = {'Y': 1, 'N': 0} 
+
+data_proc['dental caries'] = data_proc['dental caries'].map(mapping2)
+data_proc['tartar'] = data_proc['tartar'].map(mapping2)
+data_proc['smoking'] = data_proc['smoking'].map(mapping2)
+
+print(set(data_proc['dental caries']))
+print(set(data_proc['tartar']))
+print(set(data_proc['smoking']))
+
+https://cdn.discordapp.com/attachments/756488606092230728/984174334673301624/unknown.png
+-- датасет изначальтно выглядел так
+но после применения df = pd.get_dummies(data=df, prefix='', columns=['Sex', 'Embarked'])
+https://cdn.discordapp.com/attachments/756488606092230728/984174730187771944/unknown.png
+-- стал выглядеть так
+
+
+СТАТИЧЕСКАЯ ФИГНЯ
+
+data_proc -- это стандартный df
+data_proc.head() -- первые пять строк датасета
+data_proc.describe() -- просмотрим информацию о кажном признаке
+data_proc.mean() ??? заработает ли такая конструкция?
+
+
+РИСУНКИ
+
+import plotly.express as px
+#функции по отрисовке гистограмм с дисплеем 
+def plot_histgram(feature):    
+    fig = px.histogram(smoking_dataframe, x=feature,
+                       color="smoking", 
+                       marginal="box",
+                       barmode ="overlay",
+                       histnorm ='density'
+                      )  
+    fig.update_layout(
+        title={
+            'text': feature+" histogram",
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'},
+    )
+    fig.show()
+
+def display_stat(feature):
+    mean = smoking_dataframe[feature].mean()
+    std = smoking_dataframe[feature].std()
+    skew = smoking_dataframe[feature].skew()
+    kurtosis = smoking_dataframe[feature].kurtosis()
+    print('mean: {0:.4f}, std: {1:.4f}, skew: {2:.4f}, kurtosis: {3:.4f} '.format(mean, std, skew, kurtosis))
+
+plot_histgram('fasting blood sugar') #зависимость курения от уровня сахара в крови
+display_stat('fasting blood sugar')
+
+# визуализируем данные
+data_proc.plot(y='gender', kind='hist', color='red',  title='gender') # больше мужчин, чем женщин
+plt.show()
+data_proc.plot(y='age', kind='hist', color='green',  title='age') # больше всего людей в возрасте 40 лет
+plt.show()
+data_proc.plot(y='weight(kg)', kind='hist', color='red',  title='weight(kg)') # больше всего людей весом от 50 до 70 кг
+plt.show()
+data_proc.plot(y='fasting blood sugar', kind='hist', color='yellow',  title='fasting blood sugar') # 
+plt.show()
+data_proc.plot(y='LDL', kind='hist', color='red',  title='LDL') # 
+plt.show()
+
+
+# посмотрим, есть ли кореляция между признаками
+data_proc.plot(x='weight(kg)',y='fasting blood sugar', kind='scatter', 
+           color='gray',  title='')
+plt.show()
+data_proc.plot(x='Cholesterol',y='fasting blood sugar', kind='scatter', 
+           color='gray',  title='')
+plt.show()
+data_proc.plot(x='hemoglobin',y='fasting blood sugar', kind='scatter', 
+           color='gray',  title='')
+plt.show()
+data_proc.plot(x='AST',y='ALT', kind='scatter', 
+           color='gray',  title='')
+plt.show()
+
+ОСТАЛЬНЫЕ РИСУНКИ ЕСТЬ У МЕНЯ В ГИТЛАБЕ В ВЕТКЕ КАКОЙ-ТО ПЕРЕД КЛАССИФИКАЦИЕЙ, А ТАКЖЕ У ВАС, МОИ ДОРОГИЕ ЗРИТЕЛИ (ИЛИ ЗРИТЕЛЬ)
+
+
+МОДУЛЬ В
+
+# отделим целевой признак
+data_proc = data_proc.drop('ID', 1)
+data_x = data_proc.drop('smoking', 1)
+data_y = data_proc['smoking']
+
+умно сделано, кста:
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import accuracy_score, f1_score
+
+# функция тренировки и оценивания алгоритма param - сетка гиперпараметров
+# если не знаешь что-то из этого - земля пухом
+def fit_pred(alg, param):
+    optimizer = GridSearchCV(alg, param)
+    optimizer.fit(x_train, y_train) # тренировка
+    pred = optimizer.predict(x_test)
+
+    print(f'test_score: {optimizer.score(x_test, y_test)}') -- точность
+    print(f'best_params: {optimizer.best_params_}\n') -- лучшие параметры сам подбирает алгоритм
+
+    print(f'accuracy_score: \t {accuracy_score(y_test, pred)}') # оценка на тестовой выборке
+    print(f'f1_score: \t\t {f1_score(y_test, pred)}') # оценка на тестовой выборке
+
+Прошу заметить, что щас будет обучение на всех признаках, а после -- на отдельных
+
+X_train, X_test, y_train, y_test = train_test_split(data_x, data_y, test_size=0.05, random_state=0)
+
+from sklearn.naive_bayes import GaussianNB
+
+alg = GaussianNB()
+
+print(alg.get_params().keys(), '\n\n') -- тут мы просто смотрим, какие ваще есть параметры у этого
+класса (у класса GaussianNB)
+
+# оптимизируем параметры
+param_grid = {} -- ЗДЕСЬ ДОЛЖНА БЫТЬ СЕТКА ИЗ ПАРАМЕТРОВ КАКИЕ НАЙДЕШЬ!! ИНАЧЕ ЛУЧШИЕ ПАРАМЕТРЫ ОН
+НЕ ВЫДАСТ!! (... потому 11 баллов...)
+
+fit_pred(alg, param_grid)
+
+РЕКУРСИВНОЕ ПОНИЖЕНИЕ ГРАДУСА ПОСЛЕ КРЕПКОГО (плохая практика, долгая, но верная):
+import pandas as pd
+import numpy as np
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+from sklearn.feature_selection import RFE
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVR
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.decomposition import PCA
+
+estimator = SVR(kernel="linear")
+rfe = RFE(estimator, n_features_to_select=3, step=1)
+rfe = rfe.fit(X, y)
+print(rfe.n_features_)
+print(rfe.support_)
+print(rfe.ranking_)
+#month, temperature, ISI -- это типа у меня в 5_clusterization лучшие столбцы)
+df.head()
+
+ВОТ чо на выводе:
+3 -- сколько крутых
+[False  True False  True False False False False False False  True False
+False] -- тут не учитывается целевой признак, поэтому False значит, что признак - фигня,
+а True - признак красава
+[10  1 11  1  5  2  3  4  6  9  1  7  8] -- это рейтинг признаков, где 1 - значит круто,
+где другое - в принципе можно удалять, соответственно число 10 в данном случае
+означает день месяца, так что логично предположить что он фигня, а год - число 11, ну тут ваще никуда :(
+
+ТЕПЕРЬ ОДНОМЕРНЫЙ ОТБОР ПРИЗНАКОВ.
+На самом деле я в душе не что это такое, но я с интернетов увидел такую инфу, так что запишу на всякий:
+
+
+
+МОДУЛЬ С
+ИНФОРМАЦИЯ ПО ИНФЕРЕНСУ:
+
+1. Создать гитХАБ-аккаунт
+2. Создать streamlit share io аккаунт и связать его с аккаунтом в гитХАБе
+3. Посмотреть, че такое streamlit и как на нем писать фронтенд
+4. Написать чето хотя бы на стримлите, протестить на локальном хостинге через streamlit run «путь\app.py»
+5. Залить все это на гитХАБ
+6. В streamlit share io нажать на new app, далее ждать
+У тебя, скорее всего, выдаст красную табличку с ошибками. Будет ругаться на импорт. В таком случае: открываешь командную строку, пишешь в ней pip freeze, создаёшь в папке с приложением файл requirements.txt, в него пихаешь, например, seaborn==0.00.0 (не помню актуальную версию, ее берёшь из списка программ и их версий из консоли после pip freeze). Загружаешь ее на гитХАБ, удаляешь приложение из streamlit share io, заново добавляешь new app, ждёшь. Если проблема будет с импортом опять, то редактируешь файл requirements.txt, добавив туда свежую версию того, на что ругается стримлит.
+
+Примечание. Рекомендую пользоваться сервисом pastebin.com
+Он облегчит работу функции pd.read_csv(“ссылка из pastebin”). Также рекомендую ознакомиться с видео.
+
+UPD. ПО ИНФЕРЕНСУ:
+
+После всех махинаций в колабе на экзамене (то есть, после пункта B), необходимо с помощью pickle или другого инструмента сериализовать
+модель, а после -- скачать ее на компьютер.
+Когда будешь создавать приложение streamlit, создай там метод, где будешь десериализовывать модель
+Щас нарисую (напишу) сигнатуру сериализации и десериализации:
+import pickle
+model = pickle.dumps(regressor) -- сериализация примерно так выглядит
+regressor_from_bytes = pickle.loads(model)
+with open('myfile.pkl', 'wb') as output: -- сохранение прямо в файл
+       pickle.dump(regressor, output)
+
+Ну и десериализация:
+with open('myfile.pkl', 'rb') as pkl_file:
+    regressor_from_file = pickle.load(pkl_file)
+
+regressor_from_file
+
+НО можно юзать и joblib (фигня с склерном):
+from joblib import dump, load
+тогда сигнатура такая:
+dump(regressor, 'regr.joblib')
+clf_from_jobliv = load('regr.joblib') 
+all(regressor.predict(X) == clf_from_jobliv.predict(X)) -- проверка, не обманул ли нас метод
+сериализации
+
+вот функция в app.py:
+def get_model():
+    return CatBoostRegressor().load_model(os.path.join(os.path.dirname(__file__), "models", "cb"))
+
+
+НУ И СОБСТВЕННО ОДИН ИЗ КОДОВ СТРИМЛИТА ВЗЯТЫЙ ИЗ ОТКРЫТЫХ ИСТОЧНИКОВ НА ВСЯКИЙ СЛУЧАЙ))))):
+import os
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sbn
+import streamlit as st
+from catboost import CatBoostRegressor
+
+
+def show_title_with_subtitle():
+    # Заголовок и подзаголовок
+    st.title("Цены на жилье")
+    st.write("# Продвинутые методы регрессии")
+
+
+def show_info_page():
+    st.write("### Задача")
+    st.write(
+        "Построить, обучить и оценить модель для решения задачи регрессии - получения высокоточных предсказаний стоимости"
+        "жилого дома по совокупности множества описывающих признаков, влияющих на конечную стоимость.")
+    st.image("https://www.propertyreporter.co.uk/images/660x350/16402-shutterstock_538341163.jpg",
+             use_column_width=True)
+    st.write("### Описание входных данных")
+    st.write(
+        "Данные, для которых необходимо получать предсказания, представляют собой подробное признаковое описание жилых домов,"
+        "включающее в себя такие факторы, как район расположения, особенности архитектуры здания, качественная и количественная"
+        "оценки функциональных возможностей жилого дома (отопление, электричество, качество прилегающей территории, пешеходных и "
+        "автомобильных дорог) и другие.")
+    st.write("### Выбранная регрессионная модель")
+    st.write(
+        "В результате анализа метрик качества нескольких продвинутых регрессионных композиционных моделей выбрана модель"
+        "CatBoostRegressor (https://catboost.ai/docs/concepts/python-reference_catboostregressor.html), обеспечивающая"
+        "высокое качество предсказаний стоимости жилых домов.")
+    st.write("Более подробно с библиотека catboost представлена в предложенном видео:")
+    st.video("https://www.youtube.com/watch?v=UYDwhuyWYSo")
+    st.write("Выполненная работа представляет собой результат участия в соревновании на портале Kaggle. Более подробно"
+             "ознакомиться с правилами соревнования можно по ссылке ниже:")
+    st.write("https://www.kaggle.com/c/house-prices-advanced-regression-techniques")
+
+
+def show_predictions_page():
+    st.write("Файл для примера: https://drive.google.com/file/d/1z-_CFKFgS5-cf3pekPKtwogadBQeUWLe/view?usp=sharing")
+    file = st.file_uploader(label="Выберите csv файл с предобработанными данными для прогнозирования стоимости",
+                            type=["csv"],
+                            accept_multiple_files=False)
+    if file is not None:
+        test_data = pd.read_csv(file)
+        st.write("### Загруженные данные")
+        st.write(test_data)
+        make_predictions(get_model(), test_data)
+
+
+def get_model():
+    return CatBoostRegressor().load_model(os.path.join(os.path.dirname(__file__), "models", "cb"))
+
+
+def make_predictions(model, X):
+    st.write("### Предсказанные значения")
+    pred = pd.DataFrame(model.predict(X))
+    st.write(pred)
+    st.write("### Гистограмма распределения предсказаний")
+    plot_hist(pred)
+
+
+def plot_hist(data):
+    fig = plt.figure()
+    sbn.histplot(data, legend=False)
+    st.pyplot(fig)
+
+
+def select_page():
+    # Сайдбар для смены страницы
+    return st.sidebar.selectbox("Выберите страницу", ("Информация", "Прогнозирование"))
+
+
+# Стиль для скрытия со страницы меню и футера streamlit
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
+
+# размещение элементов на странице
+show_title_with_subtitle()
+st.sidebar.title("Меню")
+page = select_page()
+st.sidebar.write("© Mikhail Gunenkov 2021")
+st.sidebar.write("https://vk.com/m_gunenkov")
+st.sidebar.write("https://gitlab.com/gunenkov")
+
+if page == "Информация":
+    show_info_page()
+else:
+    show_predictions_page()
+
+
+При написании данного гайда я чувствовал море кринжа, но не столько, сколько после парка, в который я
+вряд ли пойду в ближайшее время ;)
+Остальное мне не было интересно, поскольку я крайне ленивый и хочу ничего не делать,
+и вообще, дайте мне троечку :(
